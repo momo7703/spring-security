@@ -1,11 +1,9 @@
-package com.momo.cn.filter;
+package com.momo.cn.security.filter;
 
 import com.momo.cn.entity.SysUser;
-import com.momo.cn.security.CustomUserDetails;
-import com.momo.cn.security.filter.CustomLoginAuthenticationFilter;
-import com.momo.cn.security.token.CustomLoginAuthenticationToken;
 import com.momo.cn.service.SysUserService;
 import com.momo.cn.util.JwtUtils;
+import com.momo.cn.util.SpringBeanFactoryUtils;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -22,20 +20,21 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * 该filter继承自UsernamePasswordAuthenticationFilter
- * 在验证用户名密码正确后，生成一个token，并将token返回给客户端
- */
 public class JwtLoginFilter extends UsernamePasswordAuthenticationFilter {
-
-    static final String USER_ID_KEY="USER_ID";
+    static final String USER_ID_KEY = "USER_ID";
 
     private AuthenticationManager authenticationManager;
 
-    public JwtLoginFilter(AuthenticationManager authenticationManager){
-        this.authenticationManager=authenticationManager;
+    public JwtLoginFilter(AuthenticationManager authenticationManager) {
+        this.authenticationManager = authenticationManager;
     }
 
+    /**
+     * 该方法在Spring Security验证前调用
+     * 将用户信息从request中取出，并放入authenticationManager中
+     * @author jitwxs
+     * @since 2018/5/4 10:35
+     */
     @Override
     public Authentication attemptAuthentication(HttpServletRequest req, HttpServletResponse res) throws AuthenticationException {
         try {
@@ -44,7 +43,7 @@ public class JwtLoginFilter extends UsernamePasswordAuthenticationFilter {
 
             // 将用户信息放入authenticationManager
             return authenticationManager.authenticate(
-                    new CustomLoginAuthenticationToken(
+                    new UsernamePasswordAuthenticationToken(
                             username,
                             password,
                             Collections.emptyList())
@@ -62,7 +61,7 @@ public class JwtLoginFilter extends UsernamePasswordAuthenticationFilter {
      */
     @Override
     protected void successfulAuthentication(HttpServletRequest req, HttpServletResponse res, FilterChain chain, Authentication auth) throws IOException, ServletException {
-        String username = ((CustomUserDetails)auth.getPrincipal()).getUsername();
+        String username = ((User)auth.getPrincipal()).getUsername();
 
         // 从数据库中取出用户信息
         SysUserService userService = SpringBeanFactoryUtils.getBean(SysUserService.class);
@@ -76,5 +75,4 @@ public class JwtLoginFilter extends UsernamePasswordAuthenticationFilter {
         // 将token放入响应头中
         res.addHeader("Authorization", token);
     }
-
 }
