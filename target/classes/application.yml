@@ -1,0 +1,15 @@
+server:
+  port: 8088
+
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/momo_security?useUnicode=true&characterEncoding=utf-8&useSSL=true&serverTimezone=Asia/Shanghai
+    username: root
+    password: root
+  main:
+    allow-bean-definition-overriding: true
+
+mybatis:
+  configuration:
+    map-underscore-to-camel-case: true
